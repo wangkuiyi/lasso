@@ -90,7 +90,7 @@ set(CMAKE_INSTALL_PREFIX "/home/public/paralgo")
 include_directories(
   "${PROJECT_SOURCE_DIR}"
   "${PROJECT_BINARY_DIR}"
-  "${PROJECT_SOURCE_DIR}/gtest-1.7.0/include"
+  "${PROJECT_SOURCE_DIR}/gtest/include"
   # "${PROTOBUF_DIR}/include";
   # "${MPICH2_DIR}/include";
   # "${OPENSSL_DIR}/include";
@@ -124,7 +124,7 @@ link_directories(
 # Declare packages in paralgo project.
 # Add new lines below if you add new packages in paralgo project.
 #------------------------------------------------------------------------------
-add_subdirectory(gtest-1.7.0)
+add_subdirectory(gtest)
 add_subdirectory(base)
 add_subdirectory(strutil)
 add_subdirectory(hash)
