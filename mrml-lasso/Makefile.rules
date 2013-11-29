@@ -1,0 +1,105 @@
+EXTERNAL_LIBS = ../mrml/libmrml.a ../mrml/libmrml-main.a ../strutil/libstrutil.a ../base/libbase.a
+UNIT_TESTS = sparse_vector_tmpl_test dense_vector_tmpl_test vector_types_test learner_states_test learner_test termination_flag_test
+BUILD_TARGETS = $(UNIT_TESTS) liblr.a train dump_learner_states mrml-lr liblr-predict.a
+DIST_DIR = ../../distribution/plr
+
+all : $(BUILD_TARGETS)
+
+#-------------------------------------------------------------------------------
+# protocol buffer
+#-------------------------------------------------------------------------------
+logistic_regression.pb.cc : logistic_regression.pb.h
+
+logistic_regression.pb.h : logistic_regression.proto
+	$(PROTOC) --cpp_out=./ logistic_regression.proto
+
+logistic_regression.pb.o : logistic_regression.pb.cc
+	$(CXX) $(CXXFLAGS) -c logistic_regression.pb.cc
+
+learner_states.o : learner_states.cc learner_states.hh logistic_regression.pb.h
+	$(CXX) $(CXXFLAGS) -c learner_states.cc
+
+#-------------------------------------------------------------------------------
+# basic components
+#-------------------------------------------------------------------------------
+
+vector_types.hh : sparse_vector_tmpl.hh dense_vector_tmpl.hh
+
+vector_types.o : vector_types.cc vector_types.hh sparse_vector_tmpl.hh
+
+learner_states.o : learner_states.cc learner_states.hh learner_states.hh
+
+learner.o : learner.cc learner.hh termination_flag.hh
+
+prediction_engine.o : prediction_engine.cc prediction_engine.hh
+
+command_line_options.o : command_line_options.cc command_line_options.hh
+
+mr_convert_data_format.o : mr_convert_data_format.cc mr_convert_data_format.hh command_line_options.hh
+
+mr_assign_feature_id.o : mr_assign_feature_id.cc mr_assign_feature_id.hh command_line_options.hh
+
+#-------------------------------------------------------------------------------
+# core librar
+#-------------------------------------------------------------------------------
+liblr.a : logistic_regression.pb.o vector_types.o learner_states.o learner.o
+	$(AR) $@ $^
+
+liblr-predict.a : prediction_engine.o
+	$(AR) $@ $^
+#-------------------------------------------------------------------------------
+# unit tests
+#-------------------------------------------------------------------------------
+sparse_vector_tmpl_test : sparse_vector_tmpl.hh sparse_vector_tmpl_test.cc ../base/libbase.a test_utils.hh
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+
+dense_vector_tmpl_test : dense_vector_tmpl.hh dense_vector_tmpl_test.cc ../base/libbase.a test_utils.hh
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+
+vector_types_test : vector_types_test.cc vector_types.hh dense_vector_tmpl.hh sparse_vector_tmpl.hh logistic_regression.pb.h liblr.a test_utils.hh ../base/libbase.a
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+
+learner_states_test : learner_states_test.cc learner_states.hh  liblr.a ../mrml/libmrml.a ../strutil/libstrutil.a ../base/libbase.a test_utils.hh
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+
+learner_test : learner_test.cc learner.hh learner_states.hh  sparse_vector_tmpl.hh liblr.a ../mrml/libmrml.a  ../base/libbase.a test_utils.hh
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+
+termination_flag_test : termination_flag_test.cc termination_flag.hh  ../base/libbase.a test_utils.hh
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+
+#-------------------------------------------------------------------------------
+# regression test
+#-------------------------------------------------------------------------------
+dump_learner_states.o : dump_learner_states.cc logistic_regression.pb.h learner_states.hh vector_types.hh
+
+train.o : train.cc learner_sparse_impl.hh learner_dense_impl.hh learner.hh vector_types.hh learner_states.hh  sparse_vector_tmpl.hh
+
+train : train.o ./liblr.a ../mrml/libmrml.a ../base/libbase.a
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+
+dump_learner_states : dump_learner_states.o liblr.a ../mrml/libmrml.a ../strutil/libstrutil.a ../base/libbase.a
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+
+#-------------------------------------------------------------------------------
+# mrml-lr binary
+#-------------------------------------------------------------------------------
+
+mrml_mappers_and_reducers.o : mrml_mappers_and_reducers.hh mrml_mappers_and_reducers.cc ../base/common.hh ../strutil/split_string.hh ../base/common.hh mrml_mappers_and_reducers.hh sparse_vector_tmpl.hh command_line_options.hh
+
+mrml-lr : mrml_mappers_and_reducers.o mr_assign_feature_id.o mr_convert_data_format.o command_line_options.o liblr.a $(EXTERNAL_LIBS)
+	$(CXX) $(CXXFLAGS) -o $@ $+  $(LDFLAGS)
+
+#-------------------------------------------------------------------------------
+# make distribution
+#-------------------------------------------------------------------------------
+
+dist : $(BUILD_TARGETS)
+	rm -rf $(DIST_DIR)
+	mkdir -p $(DIST_DIR)
+	cp $(BUILD_TARGETS) $(DIST_DIR)
+	cp *.hh $(DIST_DIR)
+	cp *.h $(DIST_DIR)
+
+clean :
+	rm -rf $(BUILD_TARGETS) *.o *.a *.exe *~ *.stackdump *.core *.dSYM

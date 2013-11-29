@@ -1,0 +1,29 @@
+PROTOBUF_BASE_DIR = ../../3rd-party/protobuf-2.3.0
+
+CXX = g++ -Wall -Wno-sign-compare -O3
+AR=ar rcs
+PROTOC = $(PROTOBUF_BASE_DIR)/bin/protoc
+
+PROTOBUF_CXX_FLAGS = -I$(PROTOBUF_BASE_DIR)/include/
+PROTOBUF_LD_FLAGS = -L$(PROTOBUF_BASE_DIR)/lib/ -lprotobuf -pthread
+
+BOOST_BASE_DIR = ../../3rd-party/boost-1.43.0
+BOOST_CXX_FLAGS=-I$(BOOST_BASE_DIR)/include
+BOOST_LD_FLAGS=-L$(BOOST_BASE_DIR)/lib/ -lboost_program_options -lboost_regex -lboost_filesystem -lboost_system
+
+MPI_HOME_DIR=../../3rd-party/mpich2-1.2.1p1
+MPI_CXX_FLAGS=-I$(MPI_HOME_DIR)/include
+MPI_LD_FLAGS=-L$(MPI_HOME_DIR)/lib -lmpichcxx -lmpich
+
+SSL_BASE_DIR = ../../3rd-party/openssl-0.9.8o
+SSL_CXX_FLAGS = -I$(SSL_BASE_DIR)/include
+SSL_LD_FLAGS = -L$(SSL_BASE_DIR)/lib -lssl -lcrypto -lz -ldl
+
+SSH2_BASE_DIR = ../../3rd-party/libssh2-1.2.6
+SSH2_CXX_FLAGS = -I$(SSH2_BASE_DIR)/include
+SSH2_LD_FLAGS = -L$(SSH2_BASE_DIR)/lib -lssh2
+
+CXXFLAGS= -Wall -Wno-sign-compare -O2 $(BOOST_CXX_FLAGS) $(MPI_CXX_FLAGS) $(SSH2_CXX_FLAGS) $(SSL_CXX_FLAGS) $(PROTOBUF_CXX_FLAGS)
+LDFLAGS=-static -static-libgcc $(BOOST_LD_FLAGS) $(MPI_LD_FLAGS) $(SSH2_LD_FLAGS) $(SSL_LD_FLAGS) $(PROTOBUF_LD_FLAGS)
+
+include Makefile.rules

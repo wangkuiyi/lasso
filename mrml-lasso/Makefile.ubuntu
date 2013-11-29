@@ -1,0 +1,24 @@
+PROTOBUF_BASE_DIR = /home/yiwang/3rd-party/protobuf-2.3.0
+
+CXX=g++ -Wall -Wno-sign-compare -O2 -DDEBUG_PRINT_TRACE -DDEBUG_PRINT_VARS
+AR=ar rcs
+PROTOC = $(PROTOBUF_BASE_DIR)/bin/protoc
+
+PROTOBUF_CXX_FLAGS = -I$(PROTOBUF_BASE_DIR)/include/
+PROTOBUF_LD_FLAGS = -L$(PROTOBUF_BASE_DIR)/lib/ -lprotobuf
+
+BOOST_BASE_DIR = /home/yiwang/3rd-party/boost-1.43.0
+BOOST_CXX_FLAGS=-I$(BOOST_BASE_DIR)/include
+BOOST_LD_FLAGS=-L$(BOOST_BASE_DIR)/lib/ -lboost_program_options -lboost_regex -lboost_filesystem -lboost_system
+
+MPI_HOME_DIR=/home/yiwang/3rd-party/mpich2-1.2.1p1
+MPI_CXX_FLAGS=-I$(MPI_HOME_DIR)/include
+MPI_LD_FLAGS=-L$(MPI_HOME_DIR)/lib -lmpichcxx -lmpich -lopa
+
+SSL_SSH2_CXX_FLAGS=
+SSL_SSH2_LD_FLAGS=-L/usr/lib -lssh2 -lssl -lgcrypt -lgpg-error -lz
+
+CXXFLAGS= $(BOOST_CXX_FLAGS) $(MPI_CXX_FLAGS) $(PROTOBUF_CXX_FLAGS) $(SSL_SSH2_CXX_FLAGS)
+LDFLAGS=-static -static-libgcc $(BOOST_LD_FLAGS) $(MPI_LD_FLAGS) $(PROTOBUF_LD_FLAGS) $(SSL_SSH2_LD_FLAGS) -L/usr/lib -lpthread
+
+include Makefile.rules

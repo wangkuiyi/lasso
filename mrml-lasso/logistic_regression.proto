@@ -1,0 +1,47 @@
+package logistic_regression;
+
+// RealVectorPB is the external data structure of both DenseRealVector
+// and SparseRealVector (defined in vector_types.hh).
+message RealVectorPB {
+  repeated group Element = 1 {
+    required uint64 index = 2;
+    required double value = 3;
+  }
+  optional uint32 dim = 4;    // Used for DenseRealVector.
+}
+
+message RealVectorPtrDequePB {
+  required int32 real_size = 1;
+  repeated group Element = 2 {
+    required int32 index = 3;
+    required RealVectorPB vector = 4;
+  }
+}
+
+message InstancePB {
+  message Feature {
+    optional string name = 1;     // name := group_name + ':' + feature_name
+    optional int32 id = 2;        // a zero-based successive integer
+    required double value = 3;
+  }
+  required float num_positive = 1;      // negative value means 'unlabeled'
+  required float num_appearance = 2;    // float-type allows instance weighting
+  repeated Feature feature = 3;         // the feature vector
+}
+
+message DoublePB {
+  required double value = 1;
+}
+
+message Int32PB {
+  required int32 value = 1;
+}
+
+message DoubleSequencePB {
+  repeated double value = 1;
+}
+
+message ComputeGradientMapperOutputPB {
+  required double partial_loss = 1;
+  required RealVectorPB partial_gradient = 2;
+}

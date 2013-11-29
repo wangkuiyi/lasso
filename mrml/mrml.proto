@@ -1,0 +1,14 @@
+message KeyValuePair {
+  optional bytes key = 1;
+  optional bytes value = 2;
+}
+
+// A map worker either
+//  1. send a map output to a reduce worker, or
+//  2. send a finished flag to all reduce workers.
+// If map_worker is set, it is case 2; otherwise, it is case 1.
+message MapOutput {
+  optional int32 map_worker = 1;
+  optional bytes key = 2;
+  optional bytes value = 3;
+}
